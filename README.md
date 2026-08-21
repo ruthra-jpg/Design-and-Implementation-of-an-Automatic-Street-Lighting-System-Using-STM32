@@ -49,6 +49,49 @@ Two separate threshold values are used to prevent frequent switching of the stre
 | USART2 RX | PA15 | Serial Data Reception |
 
 ---
+code
+~~~
+#include "main.h"
+
+ADC_HandleTypeDef hadc1;
+
+#define LIGHT_THRESHOLD 2000
+
+uint32_t ldr_value;
+
+int main(void) { HAL_Init();
+
+SystemClock_Config();
+MX_GPIO_Init();
+MX_ADC1_Init();
+
+while (1)
+{
+    HAL_ADC_Start(&hadc1);
+
+    if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+    {
+        ldr_value = HAL_ADC_GetValue(&hadc1);
+    }
+
+    HAL_ADC_Stop(&hadc1);
+
+    if (ldr_value < LIGHT_THRESHOLD)
+    {
+        // Dark condition
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+    }
+    else
+    {
+        // Daylight condition
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+    }
+
+    HAL_Delay(500);
+}
+}
+
+~~~
 
 ## Block Diagram
 
@@ -199,6 +242,7 @@ GND  -----| GND           |
 ---
 
 ## Expected Output
+<img width="589" height="497" alt="image" src="https://github.com/user-attachments/assets/0d8a083a-ed7f-4c0d-a005-a52bc02a2ab7" />
 
 ### Bright Condition
 
